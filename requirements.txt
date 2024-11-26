@@ -1,6 +1,5 @@
 streamlit
 pandas
 mysqlclient
-SQLAlchemy
-time
+mysql-connector-python
 datetime
