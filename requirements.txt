@@ -1,5 +1,5 @@
 streamlit
 pandas
-mysql.connector.python
+mysql-connector-python-rf==2.2.2
 time
 datetime
