@@ -3,7 +3,6 @@ from time import sleep
 import streamlit as st
 import mysql.connector 
 import pandas as pd
-import os
 
 if 'user_state' not in st.session_state:
     st.session_state.user_state = {
