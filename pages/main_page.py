@@ -1,11 +1,20 @@
 import streamlit as st
 import mysql.connector
 import pandas as pd
-from time import sleep
-import string
+import time 
+#from time import sleep
 
 conn = mysql.connector.connect(host=st.secrets.DB_HOST, user=st.secrets.DB_USERNAME, password=st.secrets.DB_PASSWORD,
 								port = st.secrets.DB_PORT, db=st.secrets.DB_NAME, auth_plugin='mysql_native_password')
+
+cursor = conn.cursor()
+
+@st.cache_data
+def run_query(query):
+    cursor.execute(query)
+    res = cursor.fetchall()
+    df = pd.DataFrame(res, columns=cursor.column_names)
+    return df
 
 if st.session_state["logged_in"] == True:
     st.write('Você está logado como:', st.session_state.user_state['nome'])
@@ -14,7 +23,7 @@ if st.session_state["logged_in"] == True:
     if loginout_button:
         st.session_state["logged_in"] = False
         st.success("Logged out!")
-        sleep(0.5)
+        time.sleep(0.5)
         st.switch_page("login.py")
 else:
     st.write('Você não está logado')
@@ -22,7 +31,7 @@ else:
     loginout_button = st.button("Login", type="primary")
     if loginout_button:
         st.session_state["logged_in"] = False
-        sleep(0.5)
+        time.sleep(0.5)
         st.switch_page("login.py")
 
 
@@ -38,7 +47,11 @@ options = [
     "Ordernar por número de alunos",
     "Listar todas as turmas de uma escola",
     "Listar alunos e professores de uma escola",
-    "Quantidade de alunos por nível de ensino"
+    "Quantidade de alunos por nível de ensino",
+    "Gêneros por escola",
+    "Idades médias por escola",
+    "Informações de infraestrutura",
+    "Informações de NSE dos alunos das escolas"
     ] 
 with st.container(border=True):
     option = st.selectbox(
@@ -48,7 +61,12 @@ with st.container(border=True):
         "Ordernar por número de alunos",
         "Listar todas as turmas de uma escola",
         "Listar alunos e professores de uma escola",
-        "Quantidade de alunos por nível de ensino"),
+        "Quantidade de alunos por nível de ensino",
+        "Gêneros por escola",
+        "Idades médias por escola",
+        "Informações de infraestrutura",
+        "Informações de NSE dos alunos das escolas"
+        ),
         index=None,
         placeholder="Escolha a opção...",
     )
@@ -58,13 +76,9 @@ with st.container(border=True):
         # IMPORTANT: Cache the conversion to prevent computation on every rerun
         return df.to_csv().encode("utf-8")
 
-    cursor = conn.cursor()
-
     if option == options[0]:
-        inp = f"SELECT * FROM infos_escolas"
-        cursor.execute(inp)
-        res = cursor.fetchall()
-        df = pd.DataFrame(res, columns=cursor.column_names)
+        inp_opt1 = f"SELECT * FROM infos_escolas"
+        df = run_query(inp_opt1)
         st.write(df)
         csv = convert_df(df)
         st.download_button(
@@ -78,10 +92,8 @@ with st.container(border=True):
 
     if option == options[1]:
         st.write("Total de Turma/Docente/Aluno por escola")
-        inp = f"SELECT * FROM atd_escola"
-        cursor.execute(inp)
-        res = cursor.fetchall()
-        df = pd.DataFrame(res, columns=cursor.column_names)
+        inp_opt2 = f"SELECT * FROM atd_escola"
+        df = run_query(inp_opt2)
         st.write(df)
         csv = convert_df(df)
         st.download_button(
@@ -96,10 +108,8 @@ with st.container(border=True):
 
     if option == options[2]:
         st.write("Escolas ordenadas por número de alunos")
-        inp = f"SELECT * FROM total_alunos_ordenado"
-        cursor.execute(inp)
-        res = cursor.fetchall()
-        df = pd.DataFrame(res, columns=cursor.column_names)
+        inp_opt3 = f"SELECT * FROM total_alunos_ordenado"
+        df = run_query(inp_opt3)
         st.write(df)
         csv = convert_df(df)
         st.download_button(
@@ -116,10 +126,8 @@ with st.container(border=True):
         ecod = st.text_input("Informe o código da escola desejada:")
         button = st.button(label="Buscar", icon="🔍")
         if button:
-            inp = f"CALL turmas_por_escola ({ecod})"
-            cursor.execute(inp)
-            res = cursor.fetchall()
-            df = pd.DataFrame(res, columns=cursor.column_names)
+            inp_opt4 = f"CALL turmas_por_escola ({ecod})"
+            df = run_query(inp_opt4)
             st.write(df)
             csv = convert_df(df)
             st.download_button(
@@ -136,10 +144,8 @@ with st.container(border=True):
         ecod = st.text_input("Informe o código da escola desejada:")
         button = st.button(label="Buscar", icon="🔍")
         if button:
-            inp = f"CALL professores_alunos ({ecod})"
-            cursor.execute(inp)
-            res = cursor.fetchall()
-            df = pd.DataFrame(res, columns=cursor.column_names)
+            inp_opt5 = f"CALL professores_alunos ({ecod})"
+            df = run_query(inp_opt5)
             st.write(df)
             csv = convert_df(df)
             st.download_button(
@@ -153,12 +159,11 @@ with st.container(border=True):
 
     if option == options[5]:
         st.write("Alunos pelo nível de ensino")
-        inp = f"SELECT * FROM alunos_por_nivel"
-        cursor.execute(inp)
-        res = cursor.fetchall()
-        df = pd.DataFrame(res, columns=cursor.column_names)
+        inp_opt6_1 = f"SELECT * FROM alunos_por_nivel"
+        df = run_query(inp_opt6_1)
         st.write(df)
         csv = convert_df(df)
+
         st.download_button(
             label="Baixar dados como CSV",
             data=csv,
@@ -167,6 +172,117 @@ with st.container(border=True):
             disabled=st.session_state.disabled,
             type="primary",
         )
+
+        ecod = st.text_input("Informe o código da escola desejada:")
+        button = st.button(label="Buscar", icon="🔍")
+
+        if button:
+            inp_opt6_2= f"CALL especifico_alunos_por_nivel ({ecod})"
+            dfe = run_query(inp_opt6_2)
+            st.write(dfe)
+            csv_especifico = convert_df(dfe)
+
+            st.download_button(
+                label="Baixar dados como CSV",
+                data=csv_especifico,
+                file_name="alunos_nivel_especifico.csv",
+                mime="text/csv",
+                disabled=st.session_state.disabled,
+                type="primary",
+            )
+    
+    if option == options[6]:
+        st.write("Gênero dos alunos por escola")
+        inp_opt7 = f"SELECT * FROM alunos_por_genero"
+        df = run_query(inp_opt7)
+        st.write(df)
+        csv = convert_df(df)
+
+        st.download_button(
+                label="Baixar dados como CSV",
+                data=csv,
+                file_name="alunos_por_genero.csv",
+                mime="text/csv",
+                disabled=st.session_state.disabled,
+                type="primary",
+            )
+
+    if option == options[7]:
+        st.write("Idades médias dos alunos por escola")
+        inp_opt8_1 = f"SELECT * FROM media_idade_alunos"
+        dfa = run_query(inp_opt8_1)
+        st.write(dfa)
+        csv_a = convert_df(dfa)
+
+        st.download_button(
+                label="Baixar dados como CSV",
+                data=csv_a,
+                file_name="idades_medias_alunos.csv",
+                mime="text/csv",
+                disabled=st.session_state.disabled,
+                type="primary",
+            )
+        
+        st.write("Idades médias dos docentes por escola")
+        inp_opt8_2 = f"SELECT * FROM media_idade_docentes"
+        dfd = run_query(inp_opt8_2)
+        st.write(dfd)
+        csv_d = convert_df(dfd)
+
+        st.download_button(
+                label="Baixar dados como CSV",
+                data=csv_d,
+                file_name="idades_medias_docentes.csv",
+                mime="text/csv",
+                disabled=st.session_state.disabled,
+                type="primary",
+            )
+
+    if option == options[8]:
+
+        st.write("Informações de infraestrutura")   
+
+        inp_opt9_1 = f"SELECT possuem_bib ()"
+        df1 = run_query(inp_opt9_1)
+        st.write("Total de escolas que possuem biblioteca: ", df1.iloc[0]['possuem_bib ()'])
+
+        inp_opt9_2 = f"SELECT possuem_comput ()"
+        df2 = run_query(inp_opt9_2)
+        st.write("Total de escolas que possuem computador: ", df2.iloc[0]['possuem_comput ()'])
+
+        inp_opt9_3 = f"SELECT acesso_internet ()"
+        df3 = run_query(inp_opt9_3)
+        st.write("Total de escolas com acesso à internet: ", df3.iloc[0]['acesso_internet ()'])
+
+    if option == options[9]:
+        st.write("Informações de NSE dos alunos das escolas")  
+
+        ecod = st.text_input("Informe o código da escola que deseja buscar")
+        button = st.button(label="Buscar", icon="🔍")
+
+        if button:
+            inp_opt10_1 = f"SELECT * FROM nse_2015 WHERE CO_ESCOLA = '{ecod}'"
+            df = run_query(inp_opt10_1)
+            if len(df) == 1:
+                st.write(df)
+                csv_especifico = convert_df(df)
+            else:
+                st.error("Escola não consta na tabela, informe outro código de escola")
+        else:
+            st.write("Dados com todas as escolas")
+            inp_opt10_2 = f"SELECT * FROM nse_2015"
+            df = run_query(inp_opt10_2)
+            st.write(df)
+
+            csv = convert_df(df)
+            st.download_button(
+                label="Baixar dados como CSV",
+                data=csv,
+                file_name="nse_escolas.csv",
+                mime="text/csv",
+                disabled=st.session_state.disabled,
+                type="primary",
+            )
 
 with st.expander("Adicionar uma escola no bookmark"):
     #st.write("Adicionar uma escola no bookmark")
@@ -180,13 +296,11 @@ with st.expander("Adicionar uma escola no bookmark"):
         nome = st.text_input("Informe o nome da escola:",disabled=st.session_state.disabled)
         button = st.button(label="Adicionar",disabled=st.session_state.disabled)
         if button:
-            inp = f"SELECT CO_ENTIDADE FROM escola WHERE NO_ENTIDADE = '{nome}'"
-            cursor.execute(inp)
-            res = cursor.fetchall()
-            df_entidade = pd.DataFrame(res, columns=cursor.column_names)
+            inp_bookmark_nome = f"SELECT CO_ENTIDADE FROM escola WHERE NO_ENTIDADE = '{nome}'"
+            df_entidade = run_query(inp_bookmark_nome)
             if len(df_entidade) == 1:
-                inp = f"INSERT INTO bookmark (ID_USU,ID_ESC) VALUES ('{st.session_state.user_state['ID']}','{df_entidade.iloc[0]['CO_ENTIDADE']}')"
-                cursor.execute(inp)
+                inp_bookmark_nome1 = f"INSERT INTO bookmark (ID_USU,ID_ESC) VALUES ('{st.session_state.user_state['ID']}','{df_entidade.iloc[0]['CO_ENTIDADE']}')"
+                run_query(inp_bookmark_nome1)
                 st.success("Escola adicionada com sucesso ao bookmark")
                 conn.commit()
             else:
@@ -197,13 +311,11 @@ with st.expander("Adicionar uma escola no bookmark"):
         co_entidade = st.text_input(label="Informe o codigo da escola:",disabled=st.session_state.disabled)
         button = st.button(label="Adicionar",disabled=st.session_state.disabled)
         if button:
-            inp = f"SELECT * FROM escola WHERE CO_ENTIDADE = '{co_entidade}'"
-            cursor.execute(inp)
-            res = cursor.fetchall()
-            df_entidade = pd.DataFrame(res, columns=cursor.column_names)
+            inp_bookmark_codigo = f"SELECT * FROM escola WHERE CO_ENTIDADE = '{co_entidade}'"
+            df_entidade = run_query(inp_bookmark_codigo)
             if len(df_entidade) == 1:
-                inp = f"INSERT INTO bookmark (ID_USU,ID_ESC) VALUES ({st.session_state.user_state['ID']},{co_entidade})"
-                cursor.execute(inp)
+                inp_bookmark_codigo1 = f"INSERT INTO bookmark (ID_USU,ID_ESC) VALUES ({st.session_state.user_state['ID']},{co_entidade})"
+                run_query(inp_bookmark_codigo1)
                 st.success("Escola adicionada com sucesso ao bookmark")
                 conn.commit()
             else:

@@ -3,6 +3,7 @@ from time import sleep
 import streamlit as st
 import mysql.connector 
 import pandas as pd
+import os
 
 if 'user_state' not in st.session_state:
     st.session_state.user_state = {
@@ -42,7 +43,7 @@ if not st.session_state.get("logged_in", False):
     cursor.execute(inp)
     res = cursor.fetchall()
     df = pd.DataFrame(res, columns=cursor.column_names)
-
+	
     if submit and len(df) == 1:
         st.session_state.user_state['ID'] = df.iloc[0]['ID']
         st.session_state.user_state['nome'] = df.iloc[0]['NOME']
@@ -50,6 +51,7 @@ if not st.session_state.get("logged_in", False):
         st.session_state.user_state['password'] = senha
         st.session_state.user_state['logged_in'] = True
         st.session_state["logged_in"] = True
+        #nome = df.iloc[0]['NOME'].replace(" ", "_")
         #hide_pages([])
         st.success("Logged in!")
         sleep(0.5)
@@ -70,3 +72,5 @@ if guest_button:
 if cadastrar_button:
     sleep(0.5)
     st.switch_page("pages/cadastro.py")
+
+conn.commit()
