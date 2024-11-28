@@ -2,6 +2,13 @@ import mysql.connector
 import streamlit as st
 import pandas as pd
 
+st.set_page_config(
+    page_title="Bookmark - Sistema Escolas Rio Claro",
+    page_icon="⭐",
+    layout="centered",
+    initial_sidebar_state="collapsed",
+)
+
 st.title("Suas escolas :rainbow[favoritas]")
 st.balloons()
 

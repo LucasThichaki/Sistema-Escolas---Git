@@ -3,6 +3,13 @@ import streamlit as st
 import pandas as pd
 import datetime
 
+st.set_page_config(
+    page_title="Página de Cadastro - Sistema Escolas Rio Claro",
+    page_icon="🔐",
+    layout="centered",
+    initial_sidebar_state="collapsed",
+)
+
 conn = mysql.connector.connect(host=st.secrets.DB_HOST, 
 							   user=st.secrets.DB_USERNAME, 
 							   password=st.secrets.DB_PASSWORD,

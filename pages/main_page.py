@@ -2,7 +2,13 @@ import streamlit as st
 import mysql.connector
 import pandas as pd
 import time 
-#from time import sleep
+
+st.set_page_config(
+    page_title="Tela principal - Sistema Escolas Rio Claro",
+    page_icon="🏫",
+    layout="centered",
+    initial_sidebar_state="collapsed",
+)
 
 conn = mysql.connector.connect(host=st.secrets.DB_HOST, user=st.secrets.DB_USERNAME, password=st.secrets.DB_PASSWORD,
 								port = st.secrets.DB_PORT, db=st.secrets.DB_NAME, auth_plugin='mysql_native_password')
