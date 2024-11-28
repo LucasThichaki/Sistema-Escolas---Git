@@ -4,6 +4,13 @@ import streamlit as st
 import mysql.connector 
 import pandas as pd
 
+st.set_page_config(
+    page_title="Página de Login - Sistema Escolas Rio Claro",
+    page_icon="🔒",
+    layout="wide",
+    initial_sidebar_state="collapsed",
+)
+
 if 'user_state' not in st.session_state:
     st.session_state.user_state = {
         'ID':'',
