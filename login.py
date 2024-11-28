@@ -7,7 +7,7 @@ import pandas as pd
 st.set_page_config(
     page_title="Página de Login - Sistema Escolas Rio Claro",
     page_icon="🔒",
-    layout="wide",
+    layout="centered",
     initial_sidebar_state="collapsed",
 )
 
