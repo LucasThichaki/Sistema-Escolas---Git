@@ -305,10 +305,18 @@ with st.expander("Adicionar uma escola no bookmark"):
             inp_bookmark_nome = f"SELECT CO_ENTIDADE FROM escola WHERE NO_ENTIDADE = '{nome}'"
             df_entidade = run_query(inp_bookmark_nome)
             if len(df_entidade) == 1:
-                inp_bookmark_nome1 = f"INSERT INTO bookmark (ID_USU,ID_ESC) VALUES ('{st.session_state.user_state['ID']}','{df_entidade.iloc[0]['CO_ENTIDADE']}')"
-                run_query(inp_bookmark_nome1)
-                st.success("Escola adicionada com sucesso ao bookmark")
-                conn.commit()
+                inp_bookmark_escola_ja_existe = f"SELECT * FROM bookmark WHERE ID_ESC = {df_entidade.iloc[0]['CO_ENTIDADE']} AND ID_USU = {st.session_state.user_state['ID']}"
+                cursor.execute(inp_bookmark_escola_ja_existe)
+                res = cursor.fetchall()
+                df_bookmark_existe = pd.DataFrame(res, columns=cursor.column_names)
+                if len(df_bookmark_existe) > 1:
+                    st.error("Escola já está no bookmark do usuário")
+                    conn.rollback()
+                else:
+                    inp_bookmark_nome1 = f"INSERT INTO bookmark (ID_USU,ID_ESC) VALUES ('{st.session_state.user_state['ID']}','{df_entidade.iloc[0]['CO_ENTIDADE']}')"
+                    run_query(inp_bookmark_nome1)
+                    st.success("Escola adicionada com sucesso ao bookmark")
+                    conn.commit()
             else:
                 st.error("Erro ao adicionar a escola")
                 conn.rollback()
@@ -321,8 +329,10 @@ with st.expander("Adicionar uma escola no bookmark"):
             df_entidade = run_query(inp_bookmark_codigo)
             if len(df_entidade) == 1:
                 inp_bookmark_escola_ja_existe = f"SELECT * FROM bookmark WHERE ID_ESC = {co_entidade} AND ID_USU = {st.session_state.user_state['ID']}"
-                df_bookmark_existe = run_query(inp_bookmark_escola_ja_existe)
-                if len(df_bookmark_existe) == 1:
+                cursor.execute(inp_bookmark_escola_ja_existe)
+                res = cursor.fetchall()
+                df_bookmark_existe = pd.DataFrame(res, columns=cursor.column_names)
+                if len(df_bookmark_existe) > 1:
                     st.error("Escola já está no bookmark do usuário")
                     conn.rollback()
                 else:
