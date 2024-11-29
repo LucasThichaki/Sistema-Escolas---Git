@@ -309,7 +309,7 @@ with st.expander("Adicionar uma escola no bookmark"):
                 cursor.execute(inp_bookmark_escola_ja_existe)
                 res = cursor.fetchall()
                 df_bookmark_existe = pd.DataFrame(res, columns=cursor.column_names)
-                if len(df_bookmark_existe) > 1:
+                if len(df_bookmark_existe) >= 1:
                     st.error("Escola já está no bookmark do usuário")
                     conn.rollback()
                 else:
@@ -332,7 +332,7 @@ with st.expander("Adicionar uma escola no bookmark"):
                 cursor.execute(inp_bookmark_escola_ja_existe)
                 res = cursor.fetchall()
                 df_bookmark_existe = pd.DataFrame(res, columns=cursor.column_names)
-                if len(df_bookmark_existe) > 1:
+                if len(df_bookmark_existe) >= 1:
                     st.error("Escola já está no bookmark do usuário")
                     conn.rollback()
                 else:
