@@ -24,7 +24,7 @@ def run_query(query):
 
 inp = f"SELECT NO_ENTIDADE FROM escola CROSS JOIN (SELECT ID_ESC FROM bookmark WHERE ID_USU = {st.session_state.user_state['ID']}) as user_bookmark WHERE CO_ENTIDADE = ID_ESC"
 df = run_query(inp)
-if len(df) == 1:
+if len(df) != 0:
     st.write(df)
 else:
     st.write("Usuário não tem nenhuma escola no bookmark!")
