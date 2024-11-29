@@ -320,10 +320,16 @@ with st.expander("Adicionar uma escola no bookmark"):
             inp_bookmark_codigo = f"SELECT * FROM escola WHERE CO_ENTIDADE = '{co_entidade}'"
             df_entidade = run_query(inp_bookmark_codigo)
             if len(df_entidade) == 1:
-                inp_bookmark_codigo1 = f"INSERT INTO bookmark (ID_USU,ID_ESC) VALUES ({st.session_state.user_state['ID']},{co_entidade})"
-                run_query(inp_bookmark_codigo1)
-                st.success("Escola adicionada com sucesso ao bookmark")
-                conn.commit()
+                inp_bookmark_escola_ja_existe = f"SELECT * FROM bookmark WHERE ID_ESC = {co_entidade} AND ID_USU = {st.session_state.user_state['ID']}"
+                df_bookmark_existe = run_query(inp_bookmark_escola_ja_existe)
+                if len(df_bookmark_existe) == 1:
+                    st.error("Escola já está no bookmark do usuário")
+                    conn.rollback()
+                else:
+                    inp_bookmark_codigo1 = f"INSERT INTO bookmark (ID_USU,ID_ESC) VALUES ({st.session_state.user_state['ID']},{co_entidade})"
+                    run_query(inp_bookmark_codigo1)
+                    st.success("Escola adicionada com sucesso ao bookmark")
+                    conn.commit()
             else:
                 st.error("Erro ao adicionar a escola")
                 conn.rollback()
